@@ -11,8 +11,11 @@ pub fn run() !void {
 
     var lineTokenizer = std.mem.tokenizeAny(u8, fileContents, "\n");
 
-    var list = std.ArrayList(u16).init(allocator);
-    defer list.deinit();
+    var wrappingList = std.ArrayList(u16).init(allocator);
+    defer wrappingList.deinit();
+
+    var ribbonList = std.ArrayList(u16).init(allocator);
+    defer ribbonList.deinit();
 
     while (lineTokenizer.next()) |line| {
         const bla = if (line[line.len - 1] == '\r') line[0 .. line.len - 1] else line;
@@ -28,14 +31,29 @@ pub fn run() !void {
 
         const smallestSide = @min(side1, side2, side3);
 
-        const result = (2 * side1) + (2 * side2) + (2 * side3) + smallestSide;
-        try list.append(result);
+        const wrappingResult = (2 * side1) + (2 * side2) + (2 * side3) + smallestSide;
+        try wrappingList.append(wrappingResult);
+
+        var sidesList: [3]u16 = [3]u16{ l, w, h };
+
+        // Sort list ascending
+        std.mem.sort(u16, &sidesList, {}, comptime std.sort.asc(u16));
+
+        const cube = l * w * h;
+        const ribbonResult = (sidesList[0] * 2) + (sidesList[1] * 2) + cube;
+        try ribbonList.append(ribbonResult);
     }
 
-    var sum: u32 = 0;
-    for (list.items) |n| {
-        sum += n;
+    var wrappingSum: u32 = 0;
+    for (wrappingList.items) |n| {
+        wrappingSum += n;
     }
 
-    std.debug.print("Result: {}\n", .{sum});
+    var ribbonSum: u32 = 0;
+    for (ribbonList.items) |n| {
+        ribbonSum += n;
+    }
+
+    std.debug.print("Wrapping result: {}\n", .{wrappingSum});
+    std.debug.print("Ribbon result: {}\n", .{ribbonSum});
 }
